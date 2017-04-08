@@ -2,10 +2,11 @@ Erlang edate(1)
 ===============
 
 ```
-usage: edate [-d date | -r seconds] [+format]
+usage: edate [-u][-d date | -r seconds] [+format]
 
 -d date         parse date and/or time string
 -r seconds      UTC seconds from the Epoch
+-u              display UTC
 +format         str:ftime/2 format string
 ```
 

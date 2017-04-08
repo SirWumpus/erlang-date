@@ -1,0 +1,9 @@
+{application,edate,
+             [{pkg_name,"edate"},
+              {vsn,"1.0.0"},
+              {description,"Erlang version of date(1)"},
+              {links,[{"Github","https://github.com/SirWumpus/erlang-date"}]},
+              {applications,[kernel,stdlib,ebs,egetopt]},
+              {licenses,["MIT"]},
+              {modules,[edate]},
+              {files,["README.md","makefile","rebar.config","src","test"]}]}.

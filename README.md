@@ -1,5 +1,5 @@
-Erlang edate(1)
-===============
+Erlang date(1)
+==============
 
 ```
 usage: edate [-u][-d date | -r seconds] [+format]

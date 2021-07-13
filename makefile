@@ -33,5 +33,5 @@ function:
 
 _checkouts:
 	mkdir _checkouts
-	-cd _checkouts; ln -s ../../rebar3_hex .; ln -s ../../ebs .
+	-cd _checkouts; ln -s ../../egetopt .; ln -s ../../ebs .
 

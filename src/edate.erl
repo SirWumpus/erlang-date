@@ -14,51 +14,51 @@ usage() ->
 	halt(2).
 
 main(Args) ->
-	case egetopt:parse(Args, [
+	case opts:to_map(Args, [
 		{ $d, param, parse_date },
 		{ $r, param, epoch_seconds },
 		{ $u, flag, utc_time }
 	]) of
-	{ok, Options, ArgsN} ->
-		ShiftTime = case proplists:get_value(utc_time, Options, false) of
-		false ->
-			fun (DTZ) -> DTZ end;
-		true ->
-			fun (DTZ) -> dtz:to_utc(DTZ) end
-		end,
-
-		{DateTimeTz, _Rest} = case proplists:get_value(parse_date, Options) of
-		undefined ->
-			case proplists:get_value(epoch_seconds, Options) of
-			undefined ->
-				{Date, Time} = calendar:local_time(),
-				{{Date, Time, dtz:time_zone_seconds()}, undefined};
-			UTC ->
-				str:ptime(list_to_binary(UTC), <<"%s">>)
-			end;
-		ParseDate ->
-			case str:to_date_time(str:trim(list_to_binary(ParseDate))) of
-			{DTZ, <<>>} ->
-				{DTZ, undefined};
-			badarg ->
-				io:format("edate: cannot parse ~s~n", [ParseDate]),
-				halt(1);
-			{_DTZ, Rest} ->
-				io:format("edate: cannot parse ~s~n", [Rest]),
-				halt(1)
-			end
-		end,
-
-		Format = case ArgsN of
-		[] ->
-			% This is not historical nor POSIX, but practical.
-			<<"%a, %c %z">>;
-		[[$+ | Fmt] | _] ->
-			list_to_binary(Fmt)
-		end,
-
-		io:format("~s~n", [str:ftime(Format, ShiftTime(DateTimeTz))]);
 	{error, Reason, Opt} ->
 		io:format("~s -~c~n", [Reason, Opt]),
-		usage()
+		usage();
+	{ok, _Options, ArgsN} ->
+		process(ArgsN)
 	end.
+
+process(ArgsN) ->
+	ShiftTime = case opts:get(utc_time, false) of
+	true ->
+		fun (DTZ) -> dtz:to_utc(DTZ) end;
+	false ->
+		fun (DTZ) -> DTZ end
+	end,
+
+	{DateTimeTz, _Rest} = case opts:get(parse_date) of
+	undefined ->
+		case opts:get(epoch_seconds) of
+		undefined ->
+			{Date, Time} = calendar:local_time(),
+			{{Date, Time, dtz:time_zone_seconds()}, <<>>};
+		Esecs ->
+			str:ptime(list_to_binary(Esecs), <<"%s">>)
+		end;
+	ParseDate ->
+		case str:to_date_time(list_to_binary(ParseDate)) of
+		badarg ->
+			io:format("edate: cannot parse ~s~n", [ParseDate]),
+			halt(1);
+		Result ->
+			Result
+		end
+	end,
+
+	Format = case ArgsN of
+	[] ->
+		% This is not historical nor POSIX, but practical.
+		<<"%a, %c %z">>;
+	[[$+ | Fmt] | _] ->
+		list_to_binary(Fmt)
+	end,
+
+	io:format("~s~n", [str:ftime(Format, ShiftTime(DateTimeTz))]).

@@ -3,7 +3,7 @@
 -export([all/0]).
 -export([
 	test_usage/1, test_default_output/1,
-	test_option_d/1, test_option_d_error/1,
+	test_option_d/1, test_option_d_u/1, test_option_d_error/1,
 	test_option_u/1,
 	test_option_r/1
 ]).
@@ -22,9 +22,9 @@ all() ->
 	].
 
 edate(Args) ->
-	Out = list_to_binary(os:cmd(["../../bin/edate ", Args])),
+	Out = str:trim(list_to_binary(os:cmd(["../../bin/edate ", Args]))),
 	ct:pal(?DEBUG, "~s", [Out]),
-	Out.
+	str:trim(Out).
 
 test_usage(_Config) ->
 	Out = edate("-?"),
@@ -43,9 +43,13 @@ test_default_output(_Config) ->
 
 test_option_d(_Config) ->
 	Out = edate("-d '1 Apr 2017' '+%s'"),
-	ExpectLen = byte_size(Out) - 1,
-	ExpectLen = str:spn(Out, <<"0123456789">>),
-	{{{2017, 4, 1}, {0, 0, 0}, _Tz}, _} = str:ptime(Out, <<"%s">>).
+	<<"1491019200">> = Out,
+	{{{2017, 4, 1}, {0, 0, 0}, -14400}, <<>>} = str:ptime(Out, <<"%s">>).
+
+test_option_d_u(_Config) ->
+	Out = edate("-u -d '1 Apr 2017' '+%s'"),
+	<<"1491019200">> = Out,
+	{{{2017, 4, 1}, {4, 0, 0}, 0}, <<>>} = str:ptime(Out, <<"%s">>).
 
 test_option_d_error(_Config) ->
 	Out = edate("-d foobar"),

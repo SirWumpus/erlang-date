@@ -16,14 +16,18 @@
 
 all() ->
 	[
-	test_usage, test_default_output,
-	test_option_d, test_option_d_error,
-	test_option_u, test_option_r
+	test_usage,
+	test_default_output,
+	test_option_d,
+	test_option_d_u,
+	test_option_d_error,
+	test_option_u,
+	test_option_r
 	].
 
 edate(Args) ->
 	Out = str:trim(list_to_binary(os:cmd(["../../bin/edate ", Args]))),
-	ct:pal(?DEBUG, "~s", [Out]),
+	ct:pal(?DEBUG, "out ~s args: ~p", [Out, Args]),
 	str:trim(Out).
 
 test_usage(_Config) ->
@@ -49,7 +53,9 @@ test_option_d(_Config) ->
 test_option_d_u(_Config) ->
 	Out = edate("-u -d '1 Apr 2017' '+%s'"),
 	<<"1491019200">> = Out,
-	{{{2017, 4, 1}, {4, 0, 0}, 0}, <<>>} = str:ptime(Out, <<"%s">>).
+	Parsed = str:ptime(Out, <<"%s">>),
+	ct:pal(?DEBUG, "seconds ~s parsed ~p", [Out, Parsed]),
+	{{{2017, 4, 1}, {0, 0, 0}, -14400}, <<>>} = Parsed.
 
 test_option_d_error(_Config) ->
 	Out = edate("-d foobar"),
